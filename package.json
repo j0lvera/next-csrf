@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.1.0",
     "@rollup/plugin-typescript": "^5.0.0",
     "@types/cookie": "^0.4.0",
@@ -28,8 +29,10 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "@types/http-errors": "^1.6.3",
     "cookie": "^0.4.1",
     "cookie-signature": "^1.1.0",
-    "csrf": "^3.1.0"
+    "csrf": "^3.1.0",
+    "querystring": "^0.2.0"
   }
 }

@@ -1,23 +1,37 @@
-import { sign} from "cookie-signature";
-import {tokens} from "./csrf/tokens";
-import {csrf} from "./middleware";
+import { NextApiHandler } from "next";
+import { tokens } from "./csrf/tokens";
+import { csrf } from "./middleware";
+import { NextCsrfOptions } from "./types";
 
-function nextCsrf({secret}: { secret: string }) {
-    // generate CSRF secret
-    const csrfSecret = tokens.secretSync();
+const defaultOptions = {
+  secret: "",
+  secretKey: "_csrf",
+  tokenKey: "XSRF-TOKEN",
+};
 
-    // generate CSRF token
-    const csrfToken = tokens.create(csrfSecret)
+function nextCsrf(userOptions: NextCsrfOptions) {
+  const options = {
+    ...defaultOptions,
+    ...userOptions,
+  };
 
-    // sign CSRF secret
-    const csrfSecretSigned = sign(csrfSecret, secret);
+  // generate CSRF secret
+  const csrfSecret = tokens.secretSync();
 
-    // generate middleware to verify CSRF token with the CSRF as parameter
-    return {
-        csrfToken,
-        csrf: (handler: Function) =>
-            csrf(handler, {secret, csrfSecret: csrfSecretSigned}),
-    }
+  // generate CSRF token
+  const csrfToken = tokens.create(csrfSecret);
+
+  // generate options for the csrf middleware
+  const csrfOptions = {
+    ...options,
+    csrfSecret,
+  };
+
+  // generate middleware to verify CSRF token with the CSRF as parameter
+  return {
+    csrfToken,
+    csrf: (handler: NextApiHandler) => csrf(handler, csrfOptions),
+  };
 }
 
-export {nextCsrf}
+export { nextCsrf };

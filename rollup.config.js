@@ -13,6 +13,6 @@ export default [
             { file: pkg.module, format: "es" },
         ],
         plugins: [typescript(), commonjs(), resolve(), analyze()],
-        // external: ["crypto"],
+        external: ["crypto"],
     },
 ];

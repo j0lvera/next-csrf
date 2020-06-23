@@ -1,29 +1,73 @@
-import { tokens } from '../csrf/tokens'
-import { MiddlewareArgs } from "../types";
-import { parseMiddlewareArgs } from "../utils";
+import { HttpError } from "../utils/httpError";
+import { serialize } from "cookie";
+import { sign, unsign } from "cookie-signature";
+import { tokens } from "../csrf/tokens";
+import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
+import { getCookie } from "../cookies";
+import { NextCsrfOptions } from "../types";
 
-function csrf(handler: Function, { secret, csrfSecret }: { secret: string, csrfSecret: string}) {
-    return async function(...args: MiddlewareArgs) {
-        const { req, res } = parseMiddlewareArgs(args);
+const getToken = (req: NextApiRequest): string | string[] => {
+  return (
+    req.headers["csrf-token"] ||
+    req.headers["xsrf-token"] ||
+    req.headers["x-csrf-token"] ||
+    req.headers["x-xsrf-token"] ||
+    ""
+  );
+};
 
-        // 1. extract token from request
-        const token = req.body && req.body._csrf;
-        // 2. verify token
-        if (!tokens.verify(csrfSecret, token)) {
-            return res.status(403).json({ message: "Invalid CSRF token"})
-        }
-        // 3. return handler
+const csrf = (
+  handler: NextApiHandler,
+  { csrfSecret, secretKey, secret, tokenKey, cookieOptions }: NextCsrfOptions
+) => async (req: NextApiRequest, res: NextApiResponse<any>) => {
+  try {
+    // If no secret in memory it means we do per-request token generation without custom `_app.js`
+    if (csrfSecret === null) {
+      // 1. extract secret and token from their cookies
+      const secretFromCookie = unsign(getCookie(req, secretKey), secret);
+      const tokenFromCookie = unsign(getCookie(req, tokenKey), secret);
 
-        // sign CSRF secret
-        // const csrfSecretSigned = sign(csrfSecret, secret);
+      // 2. extract token from custom header
+      const tokenFromHeaders = unsign(<string>getToken(req), secret);
 
-        // Save CSRF secret in a cookie session
-        // res.setHeader("Set-Cookie", serialize('_csrf', csrfSecretSigned))
+      // 3. verify signature
+      if (!secretFromCookie || !tokenFromCookie || !tokenFromHeaders) {
+        throw new HttpError(403, "Invalid CSRF token");
+      }
 
-        return handler(req, res)
+      // 4. double-submit cookie pattern
+      if (tokenFromCookie != tokenFromHeaders) {
+        throw new HttpError(403, "Invalid CSRF token");
+      }
+
+      // 5. verify CSRF token
+      if (!tokens.verify(secretFromCookie, tokenFromCookie)) {
+        throw new HttpError(403, "Invalid CSRF token");
+      }
+
+      // If secret is not present in cookie and memory it means it's the first request to an API route.
+      // So, we generate a new secret and sign the cookie
+      const reqCsrfSecret =
+        secretFromCookie ?? sign(tokens.secretSync(), secret);
+      const reqCsrfToken = sign(tokens.create(reqCsrfSecret), secret);
+
+      res.setHeader(
+        "Set-Cookie",
+        serialize(secretKey, reqCsrfSecret, cookieOptions)
+      );
+      res.setHeader(
+        "Set-Cookie",
+        serialize(tokenKey, reqCsrfToken, cookieOptions)
+      );
+
+      return handler(req, res);
     }
+  } catch (error) {
+    res.statusCode = error.status ?? 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ message: error.message }));
+    return;
+  }
+};
 
-}
-
-export { csrf }
-
+export { csrf };

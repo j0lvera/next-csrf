@@ -1,6 +1,11 @@
-import {IncomingMessage, ServerResponse} from "http";
-import {GetServerSidePropsContext} from "next";
+import { CookieSerializeOptions } from "cookie";
 
-type MiddlewareArgs = IncomingMessage[] | ServerResponse[] | GetServerSidePropsContext[];
+interface NextCsrfOptions {
+  secret: string;
+  csrfSecret: string;
+  secretKey: string;
+  tokenKey: string;
+  cookieOptions: CookieSerializeOptions;
+}
 
-export { MiddlewareArgs }
+export { NextCsrfOptions };
