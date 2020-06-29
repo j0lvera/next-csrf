@@ -39,7 +39,7 @@ describe("csrf middleware", () => {
     // If we receive a request without secret in a cookie we assume it's the first request to an API route
 
     const server = http.createServer(requestListener);
-    const agent = await request.agent(server).get("/");
+    const agent = await request.agent(server).post("/");
 
     expect(agent.header["set-cookie"][0]).toEqual(
       expect.stringMatching(/XSRF-TOKEN=(.+); Path=\/; HttpOnly/g)
@@ -67,7 +67,7 @@ describe("csrf middleware", () => {
 
   it("should return 403 if we don't send a valid token in a custom header and a cookie", async () => {
     const server = http.createServer(requestListener);
-    const firstRequest = await request.agent(server).get("/");
+    const firstRequest = await request.agent(server).post("/");
 
     // Grab the token and secret from the response
     const [reqCsrfToken] = firstRequest.header["set-cookie"];
@@ -78,20 +78,20 @@ describe("csrf middleware", () => {
     // Request without token in a custom header
     const secondRequest = await request
       .agent(server)
-      .get("/")
+      .post("/")
       .set("Cookie", reqCsrfToken);
 
     // Request with an invalid token in a custom header
     const thirdRequest = await request
       .agent(server)
-      .get("/")
+      .post("/")
       .set("Cookie", reqCsrfToken)
       .set(tokenKey, tamperedToken);
 
     // Request with an invalid token in the cookie
     const fourthRequest = await request
       .agent(server)
-      .get("/")
+      .post("/")
       .set("Cookie", tamperedToken)
       .set(tokenKey, reqCsrfToken);
 

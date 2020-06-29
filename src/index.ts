@@ -7,6 +7,7 @@ import { NextCsrfOptions } from "./types";
 const defaultOptions = {
   tokenKey: "XSRF-TOKEN",
   csrfErrorMessage: "Invalid CSRF token",
+  ignoredMethods: ["GET", "HEAD", "OPTIONS"],
   cookieOptions: {
     httpOnly: true,
     path: "/",

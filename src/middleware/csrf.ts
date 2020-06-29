@@ -12,6 +12,7 @@ const getToken = (req: NextApiRequest, tokenKey: string): string | string[] =>
 const csrf = (
   handler: NextApiHandler,
   {
+    ignoredMethods,
     csrfSecret,
     csrfErrorMessage,
     secret,
@@ -33,6 +34,11 @@ const csrf = (
         "Set-Cookie",
         serialize(tokenKey, reqCsrfTokenSigned, cookieOptions)
       );
+      return handler(req, res);
+    }
+
+    // Do nothing on if method is in `ignoreMethods`
+    if (ignoredMethods.includes(req.method as string)) {
       return handler(req, res);
     }
 

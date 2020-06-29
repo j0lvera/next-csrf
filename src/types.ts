@@ -2,6 +2,7 @@ import { CookieSerializeOptions } from "cookie";
 
 interface NextCsrfOptions {
   secret: string;
+  ignoredMethods?: string[];
   csrfErrorMessage?: string;
   tokenKey?: string;
   cookieOptions?: CookieSerializeOptions;
@@ -10,6 +11,7 @@ interface NextCsrfOptions {
 // Make the optional parameters in `nextCsrf` required in the `csrf` middleware
 interface MiddlewareArgs extends NextCsrfOptions {
   csrfErrorMessage: string;
+  ignoredMethods: string[];
   csrfSecret: string;
   tokenKey: string;
   cookieOptions: CookieSerializeOptions;
