@@ -1,12 +1,16 @@
 import { NextApiHandler } from "next";
+import { sign } from "cookie-signature";
 import { tokens } from "./csrf/tokens";
 import { csrf } from "./middleware";
 import { NextCsrfOptions } from "./types";
 
 const defaultOptions = {
-  secret: "",
-  secretKey: "_csrf",
   tokenKey: "XSRF-TOKEN",
+  csrfErrorMessage: "Invalid CSRF token",
+  cookieOptions: {
+    httpOnly: true,
+    path: "/",
+  },
 };
 
 function nextCsrf(userOptions: NextCsrfOptions) {
@@ -19,7 +23,7 @@ function nextCsrf(userOptions: NextCsrfOptions) {
   const csrfSecret = tokens.secretSync();
 
   // generate CSRF token
-  const csrfToken = tokens.create(csrfSecret);
+  const csrfToken = sign(tokens.create(csrfSecret), options.secret);
 
   // generate options for the csrf middleware
   const csrfOptions = {
