@@ -2,12 +2,16 @@
 
 ### Installation
 
-```bash
-// With yarn
-yarn add next-csrf
+With yarn:
 
-// With npm
-npm i next-csrf
+```bash
+yarn add next-csrf
+```
+
+With npm:
+
+```bash
+npm i next-csrf --save
 ```
 
 ### Usage
@@ -39,11 +43,13 @@ const handler = (req, res) => {
 export default csrf(handler);
 ```
 
-When you initialize `nextCsrf` you it will return the middleware, and a valid signed CSRF token. You can send it along with a custom header on your first request to a protected API route. Is not required, but recommended.
+When you initialize `nextCsrf` it will return the middleware, and a valid signed CSRF token. You can send it along with a custom header on your first request to a protected API route. Is not required, but recommended.
 
-You can pass this down as a prop on a custom `_app.js` and then use it on your first request.
+If you don't send the given CSRF token on the first request one is set up on any first request you send to a protected API route.
 
-Keep in mind that this token is valid only on the first request, since we create a new one on each request.
+You can pass the token down as a prop on a custom `_app.js` and then use it on your first request.
+
+Keep in mind that the token is valid only on the first request, since we create a new one on each request.
 
 Custom App:
 
@@ -81,7 +87,6 @@ function Login({ csrfToken }) {
 }
 
 export default Login;
-
 ```
 
 
