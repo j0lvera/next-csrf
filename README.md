@@ -1,5 +1,15 @@
 # next-csrf
 
+CSRF mitigation for Next.js.
+
+## Features
+
+Mitigation patterns that `next-csrf` implements:
+
+* [Synchronizer Token Pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern) using [`csrf`](https://github.com/pillarjs/csrf) (Also [read Understanding CSRF](https://github.com/pillarjs/understanding-csrf#csrf-tokens))
+* [Double-submit cookie pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie)
+* [Custom request headers](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#use-of-custom-request-headers)
+
 ### Installation
 
 With yarn:
@@ -20,27 +30,13 @@ Setup:
 
 ```js
 // file: lib/csrf.js
-import { nextCsrf } from "./index";
+import { nextCsrf } from "next-csrf";
 
 const options = {
-    secret: process.env.CSRF_SECRET // You should use a secure random number
+    secret: process.env.CSRF_SECRET // Long, randomly-generated, unique, and unpredictable value
 }
 
 export const { csrf, csrfToken } = nextCsrf(options);
-```
-
-Protect an API endpoint:
-
-```js
-// file: pages/api/protected.js
-
-import { csrf } from '../lib/csrf';
-
-const handler = (req, res) => {
-    return res.status(200).json({ message: "This API route is protected."})
-}
-
-export default csrf(handler);
 ```
 
 When you initialize `nextCsrf` it will return the middleware, and a valid signed CSRF token. You can send it along with a custom header on your first request to a protected API route. Is not required, but recommended.
@@ -89,5 +85,16 @@ function Login({ csrfToken }) {
 export default Login;
 ```
 
+Protect an API endpoint:
 
+```js
+// file: pages/api/protected.js
 
+import { csrf } from '../lib/csrf';
+
+const handler = (req, res) => {
+    return res.status(200).json({ message: "This API route is protected."})
+}
+
+export default csrf(handler);
+```
