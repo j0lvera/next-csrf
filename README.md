@@ -7,8 +7,6 @@ CSRF mitigation for Next.js.
 Mitigation patterns that `next-csrf` implements:
 
 * [Synchronizer Token Pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern) using [`csrf`](https://github.com/pillarjs/csrf) (Also [read Understanding CSRF](https://github.com/pillarjs/understanding-csrf#csrf-tokens))
-* [Double-submit cookie pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie)
-* [Custom request headers](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#use-of-custom-request-headers)
 
 ### Installation
 
@@ -28,6 +26,8 @@ npm i next-csrf --save
 
 Setup:
 
+Create an initialization file to add options:
+
 ```js
 // file: lib/csrf.js
 import { nextCsrf } from "next-csrf";
@@ -39,50 +39,28 @@ const options = {
 export const { csrf, csrfToken } = nextCsrf(options);
 ```
 
-When you initialize `nextCsrf` it will return the middleware, and a valid signed CSRF token. You can send it along with a custom header on your first request to a protected API route. Is not required, but recommended.
-
-If you don't send the given CSRF token on the first request one is set up on any first request you send to a protected API route.
-
-You can pass the token down as a prop on a custom `_app.js` and then use it on your first request.
-
-Keep in mind that the token is valid only on the first request, since we create a new one on each request.
-
-Custom App:
+Create a setup endpoint:
 
 ```js
-// file: pages/_app.js
-import App from 'next/app'
-import { csrfToken } from '../lib/csrf';
+// file: pages/api/csrf/setup.js
+import { setup } from "../../../lib/csrf";
 
-function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps, csrfToken} />
-}
+const handler = (req, res) => {
+  res.statusCode = 200;
+  res.json({ message: "CSRF token added to cookies" });
+};
 
-export default MyApp
+export default setup(handler);
 ```
 
-Usage with `fetch`:
+On the first request, or any time you want to set up the CSRF token, send a GET request to the setup endpoint, in this example `/api/csrf/setup`, and you will receive a cookie with the CSRF token on the response.
 
-```jsx
-function Login({ csrfToken }) {
-    const sendRequest = async (e) => {
-        e.preventDefault(); 
-        const response = await fetch('/api/protected', {
-            'headers': {
-                'XSRF-TOKEN': csrfToken,
-            }
-        });
-        // ...
-    };
+```js
+const response = await fetch('/api/csrf/setup');
 
-    return (
-        <Form onSubmit={sendRequest}>
-            // ...
-        </Form>
-    );
+if (response.ok) {
+    console.log('CSRF token setup')
 }
-
-export default Login;
 ```
 
 Protect an API endpoint:
@@ -98,3 +76,5 @@ const handler = (req, res) => {
 
 export default csrf(handler);
 ```
+
+Every time you hit a protected API route you will replace the token in your cookie with a new one.

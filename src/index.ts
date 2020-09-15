@@ -1,7 +1,7 @@
 import { NextApiHandler } from "next";
 import { sign } from "cookie-signature";
-import { tokens } from "./csrf/tokens";
-import { csrf } from "./middleware";
+import { tokens } from "./csrf";
+import { csrf, setup } from "./middleware";
 import { NextCsrfOptions } from "./types";
 
 const defaultOptions = {
@@ -36,6 +36,13 @@ function nextCsrf(userOptions: NextCsrfOptions) {
   // generate middleware to verify CSRF token with the CSRF as parameter
   return {
     csrfToken,
+    setup: (handler: NextApiHandler) =>
+      setup(handler, {
+        csrfSecret,
+        secret: options.secret,
+        tokenKey: options.tokenKey,
+        cookieOptions: options.cookieOptions,
+      }),
     csrf: (handler: NextApiHandler) => csrf(handler, csrfOptions),
   };
 }

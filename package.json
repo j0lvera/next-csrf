@@ -31,7 +31,7 @@
     "eslint-plugin-import": "^2.21.2",
     "jest": "^26.1.0",
     "next": "^9.4.4",
-    "np": "^6.2.4",
+    "np": "^6.4.0",
     "prettier": "^2.0.5",
     "rollup": "^2.18.0",
     "rollup-plugin-analyzer": "^3.2.3",
