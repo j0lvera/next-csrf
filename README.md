@@ -55,7 +55,7 @@ import App from 'next/app'
 import { csrfToken } from '../lib/csrf';
 
 function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps, csrfToken} />
+  return <Component {...pageProps} csrfToken={csrfToken} />
 }
 
 export default MyApp
