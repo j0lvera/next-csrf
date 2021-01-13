@@ -11,8 +11,10 @@ const defaultOptions = {
   cookieOptions: {
     httpOnly: true,
     path: "/",
+    SameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   },
+  csrfSecret: tokens.secretSync(),
 };
 
 function nextCsrf(userOptions: NextCsrfOptions) {
@@ -21,16 +23,12 @@ function nextCsrf(userOptions: NextCsrfOptions) {
     ...userOptions,
   };
 
-  // generate CSRF secret
-  const csrfSecret = tokens.secretSync();
-
   // generate CSRF token
-  const csrfToken = sign(tokens.create(csrfSecret), options.secret);
+  const csrfToken = sign(tokens.create(options.csrfSecret), options.secret);
 
   // generate options for the csrf middleware
   const csrfOptions = {
     ...options,
-    csrfSecret,
   };
 
   // generate middleware to verify CSRF token with the CSRF as parameter
@@ -38,7 +36,7 @@ function nextCsrf(userOptions: NextCsrfOptions) {
     csrfToken,
     setup: (handler: NextApiHandler) =>
       setup(handler, {
-        csrfSecret,
+        csrfSecret: options.csrfSecret,
         secret: options.secret,
         tokenKey: options.tokenKey,
         cookieOptions: options.cookieOptions,

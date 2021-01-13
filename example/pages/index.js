@@ -1,18 +1,19 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
+import { setup } from "../lib/csrf";
 
 export default function Home() {
   // We send a request to setup the csrf token
-  fetch("/api/csrf/setup")
-    .then((response) => {
-      console.log(response);
-      if (response.ok) {
-        console.log("response ok");
-        console.log("csrf token setup correctly");
-        console.log("cookies", document.cookie);
-      }
-    })
-    .catch((error) => console.error(error));
+  // fetch("http://localhost:3000/api/csrf/setup")
+  //   .then((response) => {
+  //     console.log(response);
+  //     if (response.ok) {
+  //       console.log("response ok");
+  //       console.log("csrf token setup correctly");
+  //       // console.log("cookies", document.cookie);
+  //     }
+  //   })
+  //   .catch((error) => console.error(error));
 
   const requestWithToken = () =>
     fetch("/api/protected", {
@@ -94,3 +95,7 @@ export default function Home() {
     </div>
   );
 }
+
+export const getServerSideProps = setup(async () => {
+  return { props: {} };
+});
