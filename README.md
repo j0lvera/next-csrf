@@ -1,5 +1,7 @@
 # next-csrf
 
+![Discord](https://discord.com/api/guilds/778076094112464926/widget.png)
+
 CSRF mitigation for Next.js.
 
 ## Features
