@@ -6,13 +6,13 @@ import analyze from "rollup-plugin-analyzer";
 import pkg from "./package.json";
 
 export default [
-    {
-        input: "src/index.ts",
-        output: [
-            { file: pkg.main, format: "cjs" },
-            { file: pkg.module, format: "es" },
-        ],
-        plugins: [typescript(), commonjs(), resolve(), analyze()],
-        external: ["crypto"],
-    },
+  {
+    input: "src/index.ts",
+    output: [
+      { file: pkg.main, format: "cjs" },
+      { file: pkg.module, format: "es" },
+    ],
+    plugins: [typescript(), commonjs(), resolve(), analyze()],
+    external: ["crypto", "util"],
+  },
 ];
