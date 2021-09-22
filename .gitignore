@@ -151,7 +151,4 @@ dist
 .idea
 
 .now
-
-package-lock.json
-yarn.lock
-.vercel
+example/.vercel
