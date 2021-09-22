@@ -151,3 +151,4 @@ dist
 .idea
 
 .now
+example/.vercel
