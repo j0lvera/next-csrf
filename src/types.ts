@@ -17,4 +17,11 @@ interface MiddlewareArgs extends NextCsrfOptions {
   cookieOptions: CookieSerializeOptions;
 }
 
-export { NextCsrfOptions, MiddlewareArgs };
+interface SetupMiddlewareArgs {
+  csrfSecret: string;
+  secret: string;
+  tokenKey: string;
+  cookieOptions: CookieSerializeOptions;
+}
+
+export { NextCsrfOptions, MiddlewareArgs, SetupMiddlewareArgs };
