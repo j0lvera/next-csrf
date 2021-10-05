@@ -43,15 +43,15 @@ const csrf = (
     }
 
     // 2. extract token from custom header
-    const tokenFromHeaders = parse(<string>getToken(req, tokenKey));
+    const tokenFromHeaders = <string>getToken(req, tokenKey);
 
     // We need the token in a custom header to verify Double-submit cookie pattern
-    if (!tokenFromHeaders.length) {
+    if (!tokenFromHeaders) {
       throw new HttpError(403, csrfErrorMessage);
     }
 
     const tokenFromHeadersUnsigned = unsign(
-      <string>tokenFromHeaders[tokenKey],
+      <string>tokenFromHeaders,
       secret
     );
 
