@@ -66,6 +66,23 @@ describe("csrf middleware", () => {
     expect(secondRequest.status).toBe(200);
   });
 
+  it("should validate a token with a secret and send 200 even if the cookie exists but is different from the XSRF token", async () => {
+    const server = http.createServer(requestListener);
+    const firstRequest = await request.agent(server).get("/");
+
+    // Grab the token and secret from the response
+    const [reqCsrfToken] = firstRequest.header["set-cookie"];
+
+    // Send back the token in a header and a cookie
+    const secondRequest = await request
+        .agent(server)
+        .get("/")
+        .set("Cookie", "anotherCookieThanXSRF")
+        .set(tokenKey, reqCsrfToken);
+
+    expect(secondRequest.status).toBe(200);
+  });
+
   it("should return 403 if we don't send a valid token in a custom header and a cookie", async () => {
     const server = http.createServer(requestListener);
     const firstRequest = await request.agent(server).post("/");
