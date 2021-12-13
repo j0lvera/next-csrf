@@ -23,7 +23,6 @@ const csrf = (
   try {
     // 1. extract secret and token from their cookies
     const tokenFromCookie = getCookie(req, tokenKey);
-    const tokenFromCookieUnsigned = unsign(tokenFromCookie, secret);
 
     // If no token in cookie then we assume first request and proceed to setup CSRF mitigation
     if (!tokenFromCookie) {
@@ -50,6 +49,7 @@ const csrf = (
       throw new HttpError(403, csrfErrorMessage);
     }
 
+    const tokenFromCookieUnsigned = unsign(tokenFromCookie, secret);
     const tokenFromHeadersUnsigned = unsign(
       <string>tokenFromHeaders,
       secret
