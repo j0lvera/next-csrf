@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "next": "9.5.3",
+    "next-csrf": "file:.yalc/next-csrf",
     "react": "16.13.1",
     "react-dom": "16.13.1"
   },

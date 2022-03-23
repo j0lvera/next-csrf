@@ -51,7 +51,11 @@ export default function Home() {
               valid request works.
             </p>
 
-            <button className={styles.button} onClick={requestWithToken}>
+            <button
+              id="with-csrf"
+              className={styles.button}
+              onClick={requestWithToken}
+            >
               With CSRF token
             </button>
           </div>

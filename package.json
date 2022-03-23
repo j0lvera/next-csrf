@@ -13,10 +13,12 @@
     "build": "npm run types && rollup -c",
     "dev": "rollup -w",
     "test": "jest",
+    "test:e2e": "playwright test",
     "types": "tsc --emitDeclarationOnly --declaration --outDir @types",
     "release": "cross-var npm run build && cross-var git commit -am $npm_package_version && cross-var git tag $npm_package_version && git push && git push --tags && npm publish"
   },
   "devDependencies": {
+    "@playwright/test": "^1.20.0",
     "@rollup/plugin-commonjs": "^13.0.2",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.4.0",
@@ -28,6 +30,7 @@
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",
+    "axios": "^0.26.1",
     "eslint": "^7.12.1",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.1",
