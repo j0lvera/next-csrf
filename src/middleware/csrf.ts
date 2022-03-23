@@ -5,81 +5,43 @@ import { tokens } from "../csrf";
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "../cookies";
 import { MiddlewareArgs } from "../types";
-
-const getToken = (req: NextApiRequest, tokenKey: string): string | string[] =>
-  req.headers[tokenKey.toLowerCase()] || "";
+import { getSecret } from "../get-secret";
 
 const csrf = (
   handler: NextApiHandler,
-  {
-    ignoredMethods,
-    csrfSecret,
-    csrfErrorMessage,
-    secret,
-    tokenKey,
-    cookieOptions,
-  }: MiddlewareArgs
+  { ignoredMethods, csrfErrorMessage, tokenKey, cookieOptions }: MiddlewareArgs
 ) => async (req: NextApiRequest, res: NextApiResponse<any>) => {
   try {
-    // 1. extract secret and token from their cookies
-    const tokenFromCookie = getCookie(req, tokenKey);
-    const tokenFromCookieUnsigned = unsign(tokenFromCookie, secret);
-
-    // If no token in cookie then we assume first request and proceed to setup CSRF mitigation
-    if (!tokenFromCookie) {
-      const reqCsrfToken = tokens.create(csrfSecret);
-      const reqCsrfTokenSigned = sign(reqCsrfToken, secret);
-
-      res.setHeader(
-        "Set-Cookie",
-        serialize(tokenKey, reqCsrfTokenSigned, cookieOptions)
-      );
-      return handler(req, res);
-    }
-
     // Do nothing on if method is in `ignoreMethods`
     if (ignoredMethods.includes(req.method as string)) {
       return handler(req, res);
     }
 
-    if (!tokenFromCookieUnsigned) {
-    // 2. extract token from custom header
-    const tokenFromHeaders = <string>getToken(req, tokenKey);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const cookie = parse(req.headers?.cookie);
+    console.log("cookies", cookie);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const token = cookie[tokenKey];
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const secret = cookie["csrfSecret"];
 
-    // We need the token in a custom header to verify Double-submit cookie pattern
-    if (!tokenFromHeaders) {
-      throw new HttpError(403, csrfErrorMessage);
-    }
+    console.log("token", token);
+    console.log("secret", secret);
 
-    const tokenFromCookieUnsigned = unsign(tokenFromCookie, secret);
-    const tokenFromHeadersUnsigned = unsign(
-      <string>tokenFromHeaders,
-      secret
-    );
-
-    // 3. verify signature
-    if (!tokenFromCookieUnsigned || !tokenFromHeadersUnsigned) {
-      throw new HttpError(403, csrfErrorMessage);
-    }
-
-    // 4. double-submit cookie pattern
-    if (tokenFromCookieUnsigned != tokenFromHeadersUnsigned) {
-      throw new HttpError(403, csrfErrorMessage);
-    }
+    // 1. extract secret and token from their cookies
 
     // 5. verify CSRF token
-    if (!tokens.verify(csrfSecret, tokenFromCookieUnsigned)) {
+    if (!tokens.verify(secret, token)) {
       throw new HttpError(403, csrfErrorMessage);
     }
 
     // If everything is okay and verified, generate a new token and save it in the cookie
-    const newReqCsrfToken = tokens.create(csrfSecret);
-    const newReqCsrfTokenSigned = sign(newReqCsrfToken, secret);
+    const newToken = tokens.create(secret);
 
-    res.setHeader(
-      "Set-Cookie",
-      serialize(tokenKey, newReqCsrfTokenSigned, cookieOptions)
-    );
+    res.setHeader("Set-Cookie", serialize(tokenKey, newToken, cookieOptions));
 
     return handler(req, res);
   } catch (error) {

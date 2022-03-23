@@ -8,6 +8,8 @@ import { SetupMiddlewareArgs } from "../types";
 import { tokens } from "../csrf";
 import { sign } from "cookie-signature";
 import { serialize } from "cookie";
+import { setSecret } from "../set-secret";
+import { getSecret } from "../get-secret";
 
 type SetupArgs =
   | NextApiRequest[]
@@ -27,13 +29,16 @@ const setup = (
     ? (args[1] as NextApiResponse) // (req, *res*)
     : (args[0] as GetServerSidePropsContext).res; // (context).res
 
-  const reqCsrfToken = tokens.create(csrfSecret);
-  const reqCsrfTokenSigned = sign(reqCsrfToken, secret);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const secret = getSecret(req, "csrfSecret") || tokens.secretSync();
 
-  res.setHeader(
-    "Set-Cookie",
-    serialize(tokenKey, reqCsrfTokenSigned, cookieOptions)
-  );
+  const token = tokens.create(secret);
+
+  res.setHeader("Set-Cookie", [
+    serialize("csrfSecret", secret, cookieOptions),
+    serialize(tokenKey, token, cookieOptions),
+  ]);
 
   return handler(req as NextApiRequest, res as NextApiResponse);
 };
