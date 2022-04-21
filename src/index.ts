@@ -1,47 +1,44 @@
 import { NextApiHandler } from "next";
-import { sign } from "cookie-signature";
-import { tokens } from "./csrf";
 import { csrf, setup } from "./middleware";
 import { NextCsrfOptions } from "./types";
+import { CookieSerializeOptions } from "cookie";
+
+const cookieDefaultOptions: CookieSerializeOptions = {
+  httpOnly: true,
+  path: "/",
+  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+};
 
 const defaultOptions = {
   tokenKey: "XSRF-TOKEN",
   csrfErrorMessage: "Invalid CSRF token",
   ignoredMethods: ["GET", "HEAD", "OPTIONS"],
-  cookieOptions: {
-    httpOnly: true,
-    path: "/",
-    SameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  },
-  csrfSecret: tokens.secretSync(),
+  cookieOptions: cookieDefaultOptions,
 };
 
-function nextCsrf(userOptions: NextCsrfOptions) {
+type Middleware = (handler: NextApiHandler) => void;
+
+type NextCSRF = {
+  setup: Middleware;
+  csrf: Middleware;
+};
+
+function nextCsrf(userOptions: NextCsrfOptions): NextCSRF {
   const options = {
     ...defaultOptions,
     ...userOptions,
   };
 
-  // generate CSRF token
-  const csrfToken = sign(tokens.create(options.csrfSecret), options.secret);
-
-  // generate options for the csrf middleware
-  const csrfOptions = {
-    ...options,
-  };
-
-  // generate middleware to verify CSRF token with the CSRF as parameter
+  // generate middleware
   return {
-    csrfToken,
     setup: (handler: NextApiHandler) =>
       setup(handler, {
-        csrfSecret: options.csrfSecret,
-        secret: options.secret,
         tokenKey: options.tokenKey,
         cookieOptions: options.cookieOptions,
+        secret: options.secret,
       }),
-    csrf: (handler: NextApiHandler) => csrf(handler, csrfOptions),
+    csrf: (handler: NextApiHandler) => csrf(handler, options),
   };
 }
 

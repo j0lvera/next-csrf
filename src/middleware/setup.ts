@@ -5,11 +5,10 @@ import {
   NextApiResponse,
 } from "next";
 import { SetupMiddlewareArgs } from "../types";
-import { tokens } from "../csrf";
+import { createToken } from "../utils/create-token";
 import { sign } from "cookie-signature";
 import { serialize } from "cookie";
-import { setSecret } from "../set-secret";
-import { getSecret } from "../get-secret";
+import { getSecret } from "../utils/get-secret";
 
 type SetupArgs =
   | NextApiRequest[]
@@ -18,7 +17,7 @@ type SetupArgs =
 
 const setup = (
   handler: NextApiHandler,
-  { csrfSecret, secret, tokenKey, cookieOptions }: SetupMiddlewareArgs
+  { secret, tokenKey, cookieOptions }: SetupMiddlewareArgs
 ) => async (...args: SetupArgs): Promise<void> => {
   const isApi = args.length > 1;
 
@@ -29,14 +28,21 @@ const setup = (
     ? (args[1] as NextApiResponse) // (req, *res*)
     : (args[0] as GetServerSidePropsContext).res; // (context).res
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const secret = getSecret(req, "csrfSecret") || tokens.secretSync();
+  const csrfSecret = getSecret(req, "csrfSecret") || createToken.secretSync();
+  const unsignedToken = createToken.create(csrfSecret);
 
-  const token = tokens.create(secret);
+  // TODO:
+  // Make a note that if the user changes the secret in the backend all the sessions
+  // will invalidate
+  let token;
+  if (secret != null) {
+    token = sign(unsignedToken, secret);
+  } else {
+    token = unsignedToken;
+  }
 
   res.setHeader("Set-Cookie", [
-    serialize("csrfSecret", secret, cookieOptions),
+    serialize("csrfSecret", csrfSecret, cookieOptions),
     serialize(tokenKey, token, cookieOptions),
   ]);
 

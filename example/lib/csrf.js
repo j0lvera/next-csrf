@@ -5,4 +5,6 @@ const options = {
   secret: process.env.CSRF_SECRET,
 };
 
+console.log("options", options);
+
 export const { csrf, setup, csrfToken } = nextCsrf(options);
