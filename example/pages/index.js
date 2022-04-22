@@ -1,4 +1,5 @@
 import styles from "../styles/Home.module.css";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -9,23 +10,6 @@ export default function Home() {
       </p>
 
       <div>
-        <div className={styles.card}>
-          <h3>Send a request with a valid CSRF token</h3>
-
-          <p>
-            Open the Web Console and click in the button below to see how a
-            valid request works.
-          </p>
-
-          {/*<button*/}
-          {/*  id="with-csrf"*/}
-          {/*  className={styles.button}*/}
-          {/*  onClick={requestWithToken}*/}
-          {/*>*/}
-          {/*  With CSRF token*/}
-          {/*</button>*/}
-        </div>
-
         <div className={styles.card}>
           <h3>Send a request without the CSRF token</h3>
 
@@ -47,7 +31,31 @@ export default function Home() {
             </code>
           </pre>
         </div>
+
+        <div className={styles.card}>
+          <h3>Send a request with the proper CSRF token setup</h3>
+
+          <ol>
+            <li>
+              Go to the <Link href="login">Login</Link> page
+            </li>
+            <li>Open the Console</li>
+            <li>
+              Fill the form with "demo" for username and "demo" for password
+            </li>
+            <li>Submit the form, inspect the Console and the Network</li>
+            <li>
+              Try to modify the cookie values, try again, and see the request
+              being blocked.
+            </li>
+          </ol>
+        </div>
       </div>
+      <style jsx>{`
+        ol li {
+          margin-bottom: 0.8rem;
+        }
+      `}</style>
     </>
   );
 }

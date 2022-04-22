@@ -2,27 +2,25 @@ import styles from "../styles/Home.module.css";
 import { setup } from "../lib/csrf";
 
 function Login() {
-  const requestWithToken = (event) => {
+  const requestWithToken = async (event) => {
     event.preventDefault();
 
-    fetch("/api/protected", {
+    const response = await fetch("/api/protected", {
       method: "post",
-    })
-      .then((response) => {
-        if (response.ok) {
-          console.log("protected response ok");
-          console.log(response);
-        }
-      })
-      .catch((error) => console.error(error));
+    });
+
+    if (response.ok) {
+      console.log("protected response ok");
+      console.log(response);
+    }
   };
 
   return (
     <>
-      <p>Use "demo" for both login and password</p>
+      <p>Use "demo" for both username and password</p>
       <form className={styles.form} onSubmit={requestWithToken}>
         <label>
-          Login
+          Username
           <input type="text" required />
         </label>
 

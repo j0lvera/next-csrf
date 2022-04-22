@@ -31,8 +31,6 @@ const csrf = (
     }
 
     const cookie = parse(req.headers?.cookie);
-    console.log("cookies", cookie);
-
     // Extract secret and token from their cookies
     let token = cookie[tokenKey];
     const csrfSecret = cookie["csrfSecret"];
