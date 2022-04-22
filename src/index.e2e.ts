@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-// import axios from "axios";
+import { test, expect, request } from "@playwright/test";
+import axios from "axios";
 
 // Go to login page
 // Check for secret and token
@@ -33,12 +33,8 @@ test("config is setup correctly in the example", async ({ page, baseURL }) => {
 
     const [response] = await Promise.all([
       page.waitForResponse((res) => res.status() === 200),
-      page.click("button#with-csrf"),
     ]);
 
     expect(response.status()).toBe(200);
-
-    // const axiosResponse = await axios.post(`${baseURL}/api/protected`);
-    // console.log("axios response", axiosResponse.status);
   }
 });

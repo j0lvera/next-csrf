@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "next-csrf": {
-      "signature": "792e17cedfb8c394e589b44e6592a8af",
+      "signature": "6e65494fe969db34f0fff0f005c4ffe8",
       "file": true,
       "replaced": "^0.2.0-beta.2"
     }

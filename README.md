@@ -34,11 +34,13 @@ Create an initialization file to add options:
 // file: lib/csrf.js
 import { nextCsrf } from "next-csrf";
 
-const options = {
-    secret: process.env.CSRF_SECRET // Long, randomly-generated, unique, and unpredictable value
-}
+const { csrf, setup } = nextCsrf({
+    // eslint-disable-next-line no-undef
+    secret: process.env.CSRF_SECRET,
+});
 
-export const { csrf, csrfToken } = nextCsrf(options);
+export { csrf, setup };
+
 ```
 
 Create a setup endpoint:

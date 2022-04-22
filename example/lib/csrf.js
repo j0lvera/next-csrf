@@ -1,10 +1,8 @@
 import { nextCsrf } from "next-csrf";
 
-const options = {
+const { csrf, setup } = nextCsrf({
   // eslint-disable-next-line no-undef
   secret: process.env.CSRF_SECRET,
-};
+});
 
-console.log("options", options);
-
-export const { csrf, setup, csrfToken } = nextCsrf(options);
+export { csrf, setup };

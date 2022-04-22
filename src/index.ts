@@ -30,6 +30,8 @@ function nextCsrf(userOptions: NextCsrfOptions): NextCSRF {
     ...userOptions,
   };
 
+  console.log("here!");
+
   // generate middleware
   return {
     setup: (handler: NextApiHandler) =>
