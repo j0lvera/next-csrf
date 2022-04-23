@@ -4,14 +4,58 @@ import { apiResolver } from "next/dist/next-server/server/api-utils";
 import { NextApiRequest, NextApiResponse } from "next";
 import { nextCsrf } from "../index";
 
-describe("csrf middleware", () => {
+describe("setup middleware", () => {
   const secret = "yoMqR8xtQUhbmLwM*kRK";
   const tokenKey = "XSRF-TOKEN";
-  const secretKey = "_csrf";
   const userOptions = {
     secret,
     tokenKey,
-    secretKey,
+    cookieOptions: { httpOnly: true, path: "/" },
+  };
+
+  const apiPreviewPropsMock = {
+    previewModeId: "id",
+    previewModeEncryptionKey: "key",
+    previewModeSigningKey: "key",
+  };
+
+  const { setup } = nextCsrf(userOptions);
+
+  const requestListener = (req: IncomingMessage, res: ServerResponse) => {
+    apiResolver(
+      req,
+      res,
+      undefined,
+      setup((req: NextApiRequest, res: NextApiResponse) => {
+        return res.status(200).json({ message: "Hello, world." });
+      }),
+      apiPreviewPropsMock,
+      true
+    );
+  };
+
+  it.only("Should setup cookies with csrfSecret and token", async () => {
+    const server = http.createServer(requestListener);
+    const agent = await request.agent(server).post("/");
+
+    expect(agent.header["set-cookie"][0]).toEqual(
+      expect.stringMatching(/csrfSecret=(.+); Path=\/; HttpOnly/g)
+    );
+
+    expect(agent.header["set-cookie"][1]).toEqual(
+      expect.stringMatching(/XSRF-TOKEN=(.+); Path=\/; HttpOnly/g)
+    );
+
+    expect(agent.text).toBe(JSON.stringify({ message: "Hello, world." }));
+  });
+});
+
+describe("csrf middleware", () => {
+  const secret = "yoMqR8xtQUhbmLwM*kRK";
+  const tokenKey = "XSRF-TOKEN";
+  const userOptions = {
+    secret,
+    tokenKey,
     cookieOptions: { httpOnly: true, path: "/" },
   };
 
@@ -21,6 +65,8 @@ describe("csrf middleware", () => {
     previewModeEncryptionKey: "key",
     previewModeSigningKey: "key",
   };
+
+  const { csrf } = nextCsrf(userOptions);
 
   const requestListener = (req: IncomingMessage, res: ServerResponse) => {
     apiResolver(
@@ -35,12 +81,13 @@ describe("csrf middleware", () => {
     );
   };
 
-  const { csrf } = nextCsrf(userOptions);
   it("should setup a CSRF token on the first request, i.e. when there's no token already in a cookie", async () => {
     // If we receive a request without secret in a cookie we assume it's the first request to an API route
 
     const server = http.createServer(requestListener);
     const agent = await request.agent(server).post("/");
+
+    console.log(agent.status);
 
     expect(agent.header["set-cookie"][0]).toEqual(
       expect.stringMatching(/XSRF-TOKEN=(.+); Path=\/; HttpOnly/g)
@@ -75,10 +122,10 @@ describe("csrf middleware", () => {
 
     // Send back the token in a header and a cookie
     const secondRequest = await request
-        .agent(server)
-        .get("/")
-        .set("Cookie", "anotherCookieThanXSRF")
-        .set(tokenKey, reqCsrfToken);
+      .agent(server)
+      .get("/")
+      .set("Cookie", "anotherCookieThanXSRF")
+      .set(tokenKey, reqCsrfToken);
 
     expect(secondRequest.status).toBe(200);
   });

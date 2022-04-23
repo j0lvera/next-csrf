@@ -1,0 +1,10 @@
+{
+  "version": "v1",
+  "packages": {
+    "next-csrf": {
+      "signature": "1dca630c4d536ebd2e0c2d2b8318aee8",
+      "file": true,
+      "replaced": "^0.2.0-beta.2"
+    }
+  }
+}

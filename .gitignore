@@ -152,3 +152,7 @@ dist
 
 .now
 example/.vercel
+
+#### yalc ####
+example/.yalc
+**/.yalc/**/*.md
