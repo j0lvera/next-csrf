@@ -17,7 +17,7 @@ const defaultOptions = {
   cookieOptions: cookieDefaultOptions,
 };
 
-type Middleware = (handler: NextApiHandler) => void;
+type Middleware = (handler: NextApiHandler) => any;
 
 type NextCSRF = {
   setup: Middleware;
